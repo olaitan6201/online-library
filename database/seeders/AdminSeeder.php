@@ -16,7 +16,7 @@ class AdminSeeder extends Seeder
     public function run(): void
     {
         foreach (UserRole::all() as $role) {
-            $role = Role::query()->createOrFirst([
+            Role::query()->createOrFirst([
                 'name' => ucfirst($role),
             ]);
         }
