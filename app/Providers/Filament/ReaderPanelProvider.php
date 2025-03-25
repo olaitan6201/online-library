@@ -2,6 +2,8 @@
 
 namespace App\Providers\Filament;
 
+use Filament\Navigation\MenuItem;
+use App\Filament\Reader\Pages\Profile;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -34,6 +36,13 @@ class ReaderPanelProvider extends PanelProvider
             ->discoverPages(in: app_path('Filament/Reader/Pages'), for: 'App\\Filament\\Reader\\Pages')
             ->pages([
                 Pages\Dashboard::class,
+                Profile::class,
+            ])
+            ->userMenuItems([
+                'profile' => MenuItem::make()
+                    ->label('My Profile')
+                    ->url(fn(): string => Profile::getUrl())
+                    ->icon('heroicon-o-user'),
             ])
 //            ->discoverWidgets(in: app_path('Filament/Reader/Widgets'), for: 'App\\Filament\\Reader\\Widgets')
             ->widgets([
