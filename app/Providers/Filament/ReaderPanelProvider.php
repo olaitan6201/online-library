@@ -25,6 +25,8 @@ class ReaderPanelProvider extends PanelProvider
         return $panel
             ->id('reader')
             ->path('reader')
+            ->profile()
+            ->registration()
             ->colors([
                 'primary' => Color::Amber,
             ])
@@ -33,10 +35,9 @@ class ReaderPanelProvider extends PanelProvider
             ->pages([
                 Pages\Dashboard::class,
             ])
-            ->discoverWidgets(in: app_path('Filament/Reader/Widgets'), for: 'App\\Filament\\Reader\\Widgets')
+//            ->discoverWidgets(in: app_path('Filament/Reader/Widgets'), for: 'App\\Filament\\Reader\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -51,6 +52,7 @@ class ReaderPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+            ])
+            ->databaseNotifications();
     }
 }
