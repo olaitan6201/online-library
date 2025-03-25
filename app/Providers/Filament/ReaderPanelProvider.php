@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Enums\UserRole;
 use Filament\Navigation\MenuItem;
 use App\Filament\Reader\Pages\Profile;
 use Filament\Http\Middleware\Authenticate;
@@ -25,9 +26,10 @@ class ReaderPanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
         return $panel
-            ->id('reader')
+            ->id(UserRole::READER)
             ->path('reader')
             ->profile()
+            ->login()
             ->registration()
             ->colors([
                 'primary' => Color::Amber,

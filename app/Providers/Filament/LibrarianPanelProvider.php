@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Enums\UserRole;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -24,7 +25,7 @@ class LibrarianPanelProvider extends PanelProvider
     {
         return $panel
             ->default()
-            ->id('librarian')
+            ->id(UserRole::LIBRARIAN)
             ->path('librarian')
             ->login()
             ->colors([
