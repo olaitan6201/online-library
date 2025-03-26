@@ -38,7 +38,7 @@ jobs:
           server-dir: ${{ secrets.FTP_DEPLOY_PATH }}
           protocol: ftp
           port: 21
-          security: implicit  # Try 'explicit' if this fails
+          security: strict
           dangerous-clean-slate: false
           exclude: |
             **/.git*
