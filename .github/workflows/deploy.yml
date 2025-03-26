@@ -36,6 +36,10 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./
           server-dir: ${{ secrets.FTP_DEPLOY_PATH }}
+          protocol: ftp
+          port: 21
+          security: implicit  # Try 'explicit' if this fails
+          dangerous-clean-slate: false
           exclude: |
             **/.git*
             **/.github/*
@@ -43,7 +47,6 @@ jobs:
             **/node_modules/*
             **/storage/*
             **/bootstrap/cache/*
-          dangerous-clean-slate: false
 
       - name: Run post-deployment commands (via cPanel API)
         run: |
