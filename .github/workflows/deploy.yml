@@ -41,7 +41,7 @@ jobs:
             --exclude='storage' \
             --exclude='tests' \
             ./ deploy/
-          cp .env.production deploy/.env
+          cp .env.example deploy/.env
           cd deploy && zip -r ../deploy.zip .
 
       - name: Upload package to server
