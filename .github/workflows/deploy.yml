@@ -36,7 +36,7 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./
           server-dir: ${{ secrets.FTP_DEPLOY_PATH }}
-          protocol: sftp
+          protocol: ftps
           port: 21
           security: strict
           dangerous-clean-slate: false
