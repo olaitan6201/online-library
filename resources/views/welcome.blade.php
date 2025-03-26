@@ -43,11 +43,11 @@
                 <a href="#" class="text-gray-500 hover:text-indigo-600 px-3 py-2 text-sm font-medium">About</a>
                 <a href="#" class="text-gray-500 hover:text-indigo-600 px-3 py-2 text-sm font-medium">Contact</a>
                 <div class="flex space-x-4">
-                    <a href="/login"
+                    <a href="{{route('filament.reader.auth.login')}}"
                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-300">
                         Sign In
                     </a>
-                    <a href="/register"
+                    <a href="{{route('filament.reader.auth.register')}}"
                        class="border border-indigo-600 text-indigo-600 hover:bg-indigo-50 px-4 py-2 rounded-md text-sm font-medium transition duration-300">
                         Register
                     </a>
@@ -68,7 +68,7 @@
                 Explore thousands of books from classic literature to modern bestsellers. All at your fingertips.
             </p>
             <div class="mt-10">
-                <a href="/register"
+                <a href="{{route('filament.reader.auth.register')}}"
                    class="inline-block bg-white text-indigo-600 py-3 px-8 rounded-md text-lg font-medium hover:bg-gray-100 transition duration-300">
                     Join Our Library
                 </a>
@@ -269,7 +269,7 @@
         </h2>
         <div class="mt-8 flex lg:mt-0 lg:flex-shrink-0">
             <div class="inline-flex rounded-md shadow">
-                <a href="/register"
+                <a href="{{route('filament.reader.auth.register')}}"
                    class="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-indigo-600 bg-white hover:bg-indigo-50">
                     Get started
                 </a>
@@ -323,7 +323,7 @@
         </div>
         <div class="mt-8 border-t border-gray-700 pt-8 md:flex md:items-center md:justify-between">
             <p class="text-gray-400 text-sm text-center md:text-left">
-                &copy; 2023 OnlineLibrary. All rights reserved.
+                &copy; {{date('Y')}} OnlineLibrary. All rights reserved.
             </p>
             <div class="mt-8 flex justify-center space-x-6 md:mt-0">
                 <a href="#" class="text-gray-400 hover:text-white">

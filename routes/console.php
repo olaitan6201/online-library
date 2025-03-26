@@ -11,5 +11,5 @@ Artisan::command('inspire', function () {
     ->appendOutputTo(storage_path('logs/send-book-notifications.log'))
     ->withoutOverlapping()
     ->runInBackground()
-    ->everyFourHours()
+    ->daily()
     ->onOneServer();
