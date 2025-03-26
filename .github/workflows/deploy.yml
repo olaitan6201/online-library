@@ -1,0 +1,67 @@
+name: Deploy to cPanel
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          composer install --no-dev --prefer-dist --optimize-autoloader
+          npm install
+          npm run prod
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.CPANEL_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          cat >>~/.ssh/config <<END
+          Host cpanel
+            HostName ${{ secrets.CPANEL_HOST }}
+            User ${{ secrets.CPANEL_USERNAME }}
+            IdentityFile ~/.ssh/id_rsa
+            StrictHostKeyChecking no
+          END
+
+      - name: Create deployment package
+        run: |
+          mkdir -p deploy
+          rsync -av --delete --exclude='.env' \
+            --exclude='.git*' \
+            --exclude='.github' \
+            --exclude='node_modules' \
+            --exclude='storage' \
+            --exclude='tests' \
+            ./ deploy/
+          cp .env.production deploy/.env
+          cd deploy && zip -r ../deploy.zip .
+
+      - name: Upload package to server
+        run: |
+          scp deploy.zip cpanel:${{ secrets.CPANEL_DEPLOY_PATH }}
+
+      - name: Extract and deploy on server
+        run: |
+          ssh cpanel "cd ${{ secrets.CPANEL_DEPLOY_PATH }} && \
+            unzip -q -o deploy.zip && \
+            rm deploy.zip && \
+            composer dump-autoload && \
+            php artisan migrate --force && \
+            php artisan optimize:clear && \
+            chmod -R 755 storage bootstrap/cache"
+
+      - name: Run migrations (optional)
+        run: |
+          ssh cpanel "cd ${{ secrets.CPANEL_DEPLOY_PATH }} && php artisan migrate --force"
+
+      - name: Clear cache
+        run: |
+          ssh cpanel "cd ${{ secrets.CPANEL_DEPLOY_PATH }} && php artisan optimize:clear"
