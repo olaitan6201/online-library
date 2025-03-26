@@ -1,60 +1,33 @@
-name: Deploy to cPanel via FTP
+name: 🚀 FTP deploy on push
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
-  deploy:
+  web-deploy:
+    name: 🎉 Deploy to test
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: 🚚 Get latest code
+        uses: actions/checkout@v2
 
-      - name: Install dependencies
-        run: |
-          composer install --no-dev --prefer-dist --optimize-autoloader
-          npm install
-          npm run build
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
 
-      - name: Prepare deployment files
-        run: |
-          # Remove files not needed in production
-          rm -rf .git* .github tests node_modules
+      - name: Remove cached bootstrap file
+        run: sudo rm -rf bootstrap/services.php bootstrap/cache/packages.php
 
-          cp .env.example .env
+      - name: Install composer dependencies
+        run: composer install --no-interaction --prefer-dist
 
-          # Set proper permissions for storage
-          chmod -R 755 storage bootstrap/cache
-
-      - name: Upload files via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.1
+      - name: 📂 Sync files
+        uses: SamKirkland/FTP-Deploy-Action@4.3.0
         with:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./
+          password: ${{ secrets.FTP_SERVER }}
           server-dir: ${{ secrets.FTP_DEPLOY_PATH }}
-          protocol: ftp
-          port: 21
-          security: strict
-          dangerous-clean-slate: false
-          exclude: |
-            **/.git*
-            **/.github/*
-            **/tests/*
-            **/node_modules/*
-            **/storage/*
-            **/bootstrap/cache/*
-
-      - name: Run post-deployment commands (via cPanel API)
-        run: |
-          curl -X POST \
-          "https://${{ secrets.FTP_HOST }}:2083/execute/Fileman/run_cmd" \
-          -u "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
-          -d "cd ${{ secrets.FTP_DEPLOY_PATH }} && \
-              composer dump-autoload && \
-              php artisan migrate --force && \
-              php artisan optimize:clear && \
-              chmod -R 755 storage bootstrap/cache"
