@@ -1,4 +1,4 @@
-name: Deploy to cPanel
+name: Deploy to cPanel via FTP
 
 on:
   push:
@@ -18,50 +18,40 @@ jobs:
           npm install
           npm run build
 
-      - name: Configure SSH
+      - name: Prepare deployment files
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.CPANEL_SSH_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          cat >>~/.ssh/config <<END
-          Host cpanel
-            HostName ${{ secrets.CPANEL_HOST }}
-            User ${{ secrets.CPANEL_USERNAME }}
-            IdentityFile ~/.ssh/id_rsa
-            StrictHostKeyChecking no
-          END
+          # Remove files not needed in production
+          rm -rf .git* .github tests node_modules
 
-      - name: Create deployment package
-        run: |
-          mkdir -p deploy
-          rsync -av --delete --exclude='.env' \
-            --exclude='.git*' \
-            --exclude='.github' \
-            --exclude='node_modules' \
-            --exclude='storage' \
-            --exclude='tests' \
-            ./ deploy/
-          cp .env.example deploy/.env
-          cd deploy && zip -r ../deploy.zip .
+          cp .env.example .env
 
-      - name: Upload package to server
-        run: |
-          scp deploy.zip cpanel:${{ secrets.CPANEL_DEPLOY_PATH }}
+          # Set proper permissions for storage
+          chmod -R 755 storage bootstrap/cache
 
-      - name: Extract and deploy on server
-        run: |
-          ssh cpanel "cd ${{ secrets.CPANEL_DEPLOY_PATH }} && \
-            unzip -q -o deploy.zip && \
-            rm deploy.zip && \
-            composer dump-autoload && \
-            php artisan migrate --force && \
-            php artisan optimize:clear && \
-            chmod -R 755 storage bootstrap/cache"
+      - name: Upload files via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.1
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./
+          server-dir: ${{ secrets.FTP_DEPLOY_PATH }}
+          exclude: |
+            **/.git*
+            **/.github/*
+            **/tests/*
+            **/node_modules/*
+            **/storage/*
+            **/bootstrap/cache/*
+          dangerous-clean-slate: false
 
-      - name: Run migrations (optional)
+      - name: Run post-deployment commands (via cPanel API)
         run: |
-          ssh cpanel "cd ${{ secrets.CPANEL_DEPLOY_PATH }} && php artisan migrate --force"
-
-      - name: Clear cache
-        run: |
-          ssh cpanel "cd ${{ secrets.CPANEL_DEPLOY_PATH }} && php artisan optimize:clear"
+          curl -X POST \
+          "https://${{ secrets.FTP_HOST }}:2083/execute/Fileman/run_cmd" \
+          -u "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
+          -d "cd ${{ secrets.FTP_DEPLOY_PATH }} && \
+              composer dump-autoload && \
+              php artisan migrate --force && \
+              php artisan optimize:clear && \
+              chmod -R 755 storage bootstrap/cache"
